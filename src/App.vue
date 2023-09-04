@@ -10,38 +10,13 @@
     </div>
 
     <!-- Button to generate and share the image -->
-    <button @click="generateAndShareImage">Share Image</button>
+    <button @click="generateImage">Generate Image</button>
 
     <!-- The generated image will be displayed here -->
     <img v-if="imageUrl" :src="imageUrl" alt="Generated Image" />
 
-    <!-- Share buttons for Facebook, Twitter, and Instagram -->
-    <div class="share-buttons">
-      <a
-        class="share-button facebook"
-        :href="facebookShareLink"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Share on Facebook
-      </a>
-      <a
-        class="share-button twitter"
-        :href="twitterShareLink"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Share on Twitter
-      </a>
-      <a
-        class="share-button instagram"
-        :href="instagramShareLink"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Share on Instagram
-      </a>
-    </div>
+    <!-- Button to share the generated image using Web Share API -->
+    <button v-if="imageUrl" @click="shareImage">Share Image</button>
   </div>
 </template>
 
@@ -59,27 +34,8 @@ export default {
       imageUrl: null,
     };
   },
-  computed: {
-    // Computed properties for generating share links
-    facebookShareLink() {
-      return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        this.imageUrl
-      )}`;
-    },
-    twitterShareLink() {
-      const text = "Check out this generated image!";
-      return `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-        text
-      )}&url=${encodeURIComponent(this.imageUrl)}`;
-    },
-    instagramShareLink() {
-      return `https://www.instagram.com/upload/image/?url=${encodeURIComponent(
-        this.imageUrl
-      )}`;
-    },
-  },
   methods: {
-    generateAndShareImage() {
+    generateImage() {
       const content = this.$el.querySelector(".content");
 
       htmlToImage
@@ -90,6 +46,24 @@ export default {
         .catch((error) => {
           console.error("Error generating image:", error);
         });
+    },
+    shareImage() {
+      if (navigator.share && this.imageUrl) {
+        navigator
+          .share({
+            title: "Generated Image",
+            text: "Check out this generated image!",
+            url: this.imageUrl,
+          })
+          .then(() => {
+            console.log("Shared successfully");
+          })
+          .catch((error) => {
+            console.error("Error sharing:", error);
+          });
+      } else {
+        console.log("Web Share API is not supported in this browser.");
+      }
     },
   },
 };
@@ -112,24 +86,5 @@ button {
 img {
   max-width: 100%;
   margin-top: 10px;
-}
-
-.share-buttons {
-  margin-top: 20px;
-}
-
-.share-button {
-  display: inline-block;
-  padding: 10px 20px;
-  margin: 5px;
-  text-decoration: none;
-  border: 1px solid #333;
-  border-radius: 5px;
-  color: #333;
-}
-
-.share-button:hover {
-  background-color: #333;
-  color: #fff;
 }
 </style>
