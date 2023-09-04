@@ -1,50 +1,90 @@
 <template>
   <div>
-    <button @click="shareImageOnWhatsApp">Share Image on WhatsApp</button>
+    <div class="content">
+      <!-- Your content goes here -->
+      <p>Company Name: {{ companyName }}</p>
+      <p>Profit: {{ profit }}%</p>
+      <p>Entry Price: ${{ entryPrice }}</p>
+      <p>Last Price: ${{ lastPrice }}</p>
+      <p>Shared Code: {{ sharedCode }}</p>
+    </div>
+
+    <!-- Button to generate and share the image -->
+    <button @click="generateAndShareImage">Share Image</button>
+
+    <!-- The generated image will be displayed here -->
+    <img v-if="imageUrl" :src="imageUrl" alt="Generated Image" />
   </div>
 </template>
 
 <script>
+import * as htmlToImage from "html-to-image";
+
 export default {
+  data() {
+    return {
+      companyName: "Beannsofts Inc",
+      profit: +20,
+      entryPrice: 200,
+      lastPrice: 220,
+      sharedCode: "1234567890",
+      imageUrl: null,
+    };
+  },
   methods: {
-    shareImageOnWhatsApp() {
-      // Replace 'your-image.jpg' with the path to your image.
-      const imageSrc =
-        "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg";
+    generateAndShareImage() {
+      const content = this.$el.querySelector(".content");
 
-      // Convert the image to a Data URI.
-      const imageUri = `data:image/jpeg;base64,${this.getImageData(imageSrc)}`;
+      htmlToImage
+        .toPng(content)
+        .then((dataUrl) => {
+          this.imageUrl = dataUrl;
 
-      // Create a WhatsApp share URL with the Data URI.
-      const whatsappShareUrl = `whatsapp://send?text=${encodeURIComponent(imageUri)}`;
-
-      // Open the WhatsApp mobile app with the share URL.
-      window.location.href = whatsappShareUrl;
-    },
-    getImageData(imageSrc) {
-      // You need to implement a function to fetch and convert the image to a Data URI.
-      // This depends on your specific setup, whether you're using a server or client-side code.
-      // Here's a simplified example using FileReader for client-side usage:
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const imageData = reader.result.split(",")[1];
-          resolve(imageData);
-        };
-        reader.onerror = (error) => {
-          reject(error);
-        };
-        // Load the image file.
-        fetch(imageSrc)
-          .then((response) => response.blob())
-          .then((blob) => {
-            reader.readAsDataURL(blob);
-          })
-          .catch((error) => {
-            reject(error);
-          });
-      });
+          // Check if the Web Share API is available in the browser
+          if (navigator.share) {
+            navigator
+              .share({
+                title: "Generated Image",
+                text: "Check out this generated image!",
+                url: dataUrl,
+              })
+              .then(() => {
+                // Sharing succeeded
+                console.log("Shared successfully");
+              })
+              .catch((error) => {
+                // Sharing failed
+                console.error("Error sharing:", error);
+              });
+          } else {
+            // Fallback for browsers that don't support Web Share API
+            console.log("Web Share API is not supported in this browser.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error generating image:", error);
+        });
     },
   },
 };
 </script>
+
+<style scoped>
+/* Add your CSS styles for the content here */
+.content {
+  background-color: #ffffff;
+  padding: 20px;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+button {
+  margin-top: 10px;
+}
+
+img {
+  max-width: 100%;
+  margin-top: 10px;
+}
+</style>
