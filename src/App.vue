@@ -8,10 +8,10 @@
   </div>
   <div class="content">
     <!-- Your content goes here -->
-    <Img
+    <!-- <Img
       src="https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg"
       class="logo"
-    />
+    /> -->
     <p>Company Name: {{ companyName }}</p>
     <p>Profit: {{ profit }}%</p>
     <p>Entry Price: ${{ entryPrice }}</p>
