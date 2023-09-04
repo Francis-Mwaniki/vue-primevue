@@ -24,18 +24,26 @@ export default {
     },
     shareImage() {
       if (navigator.share) {
-        const shareData = {
-          url: this.imageUrl,
-        };
+        // Fetch the image data
+        fetch(this.imageUrl)
+          .then((response) => response.blob())
+          .then((blob) => {
+            const shareData = {
+              files: [new File([blob], "image.png", { type: blob.type })],
+            };
 
-        // Share the image using the Web Share API
-        navigator
-          .share(shareData)
-          .then(() => {
-            alert("Image shared successfully");
+            // Share the image using the Web Share API
+            navigator
+              .share(shareData)
+              .then(() => {
+                alert("Image shared successfully");
+              })
+              .catch((error) => {
+                alert("Error sharing image:", error);
+              });
           })
           .catch((error) => {
-            alert("Error sharing image:", error);
+            alert("Error fetching image:", error);
           });
       } else {
         alert("Web Share API is not supported in this browser");
